@@ -1,0 +1,77 @@
+#cloud-config
+
+coreos:
+  etcd2:
+    # multi-region and multi-cloud deployments need to use $public_ipv4
+    advertise-client-urls: http://$private_ipv4:2379
+    initial-advertise-peer-urls: http://$private_ipv4:2380
+    # listen on both the official ports and the legacy ports
+    # legacy ports can be omitted if your application doesn't depend on them
+    listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
+    listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
+  fleet:
+    public-ip: $private_ipv4
+    etcd_key_prefix: "/stakater/server"
+  units:
+    - name: etcd2.service
+      command: start
+      drop-ins:
+        - name: 60-etcd-peers.conf
+          content: |
+              [Service]
+              EnvironmentFile=/etc/sysconfig/etcd-peers
+    - name: install-docker-compose.service
+      command: start
+      content: |
+        [Unit]
+        Description=Install Docker compose
+        Requires=docker.service
+        After=docker.service
+
+        [Service]
+        Type=oneshot
+        RemainAfterExit=true
+        EnvironmentFile=/etc/environment
+        TimeoutStartSec=10min
+        ExecStart=/opt/bin/install-docker-compose.sh
+        [Install]
+        WantedBy=multi-user.target
+    - name: consul.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Consul Server
+        After=docker.service
+        Requires=docker.service
+        After=etcd2.service
+        Requires=etcd2.service
+
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=/usr/bin/docker pull progrium/consul
+        ExecStartPre=-/usr/bin/docker rm %n
+        ExecStartPre=/usr/bin/sh -c "etcdctl set /consul/server/ip $private_ipv4"
+        ExecStart=/usr/bin/docker run --rm --name %n \
+                                  --net="host" \
+                                  progrium/consul -server -ui-dir /ui -advertise $private_ipv4 -bootstrap
+        ExecStop=/usr/bin/docker stop %n
+        RestartSec=650
+        Restart=always
+write_files:
+  - path: /etc/sysconfig/etcd-peers
+    permissions: 0600
+    owner: root
+    content: |
+      ETCD_INITIAL_CLUSTER_STATE=new
+      ETCD_NAME=server
+      ETCD_INITIAL_CLUSTER="server=http://$private_ipv4:2380"
+
+  - path: /opt/bin/install-docker-compose.sh
+    permissions: 0700
+    owner: root
+    content: |
+        #!/bin/bash
+        mkdir -p /opt/bin
+        curl -L `curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r '.assets[].browser_download_url | select(contains("Linux") and contains("x86_64"))'` > /opt/bin/docker-compose
+        chmod +x /opt/bin/docker-compose
