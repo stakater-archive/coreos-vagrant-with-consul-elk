@@ -1,0 +1,32 @@
+logstash:
+  image: stakater/logstash-with-consul-template
+  dns: ${COREOS_PRIVATE_IPV4}
+  dns_search: service.consul
+  volumes:
+    - ~/shared/templates/logstash-templates:/templates
+  ports:
+    - 5044:5044
+  environment:
+    - SERVICE_NAME=logstash
+
+elasticsearch:
+  image: stakater/elasticsearch
+  dns: ${COREOS_PRIVATE_IPV4}
+  dns_search: service.consul
+  volumes:
+    - ~/app-data/esdata:/usr/share/elasticsearch/data
+  environment:
+    - SERVICE_NAME=elasticsearch
+  ports:
+    - 9200:9200
+    - 9400:9300
+
+kibana:
+  image: stakater/kibana:4.5
+  dns: ${COREOS_PRIVATE_IPV4}
+  dns_search: service.consul
+  ports:
+    - 5601:5601
+  environment:
+    - SERVICE_NAME=kibana
+    - ELASTICSEARCH_URL=http://elasticsearch-9200:9200

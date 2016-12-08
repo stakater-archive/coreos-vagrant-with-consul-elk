@@ -1,0 +1,1 @@
+This folder is mapped inside the vagrant machine to easily copy or transfer data between host and vagrant machine.

@@ -1,0 +1,98 @@
+#cloud-config
+
+coreos:
+  etcd2:
+    proxy: on
+    # listen on both the official ports and the legacy ports
+    # legacy ports can be omitted if your application doesn't depend on them
+    listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
+  fleet:
+    public-ip: $private_ipv4
+    etcd_key_prefix: "/stakater/client"
+  units:
+    - name: etcd2.service
+      command: start
+      drop-ins:
+        - name: 60-initial-cluster.conf
+          content: |
+            [Service]
+            EnvironmentFile=/etc/sysconfig/initial-cluster
+    - name: fleet.service
+      command: start
+    - name: install-docker-compose.service
+      command: start
+      content: |
+        [Unit]
+        Description=Install Docker compose
+        Requires=docker.service
+        After=docker.service
+
+        [Service]
+        Type=oneshot
+        RemainAfterExit=true
+        EnvironmentFile=/etc/environment
+        TimeoutStartSec=10min
+        ExecStart=/opt/bin/install-docker-compose.sh
+        [Install]
+        WantedBy=multi-user.target
+    - name: consul-agent.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Consul Agent
+        After=docker.service
+        Requires=docker.service
+        After=etcd2.service
+        Requires=etcd2.service
+
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=/usr/bin/bash -c "/usr/bin/systemctl set-environment CONSUL_SERVER=$(etcdctl get /consul/server/ip)"
+        ExecStartPre=/usr/bin/docker pull progrium/consul
+        ExecStartPre=-/usr/bin/docker rm %n
+        ExecStart=/usr/bin/docker run --rm --name %n \
+                                  --net="host" \
+                                  progrium/consul -ui-dir /ui -retry-join ${CONSUL_SERVER} -advertise $private_ipv4
+        ExecStop=/usr/bin/docker stop %n
+        RestartSec=650
+        Restart=always
+    - name: registrator.service
+      command: start
+      enable: true
+      content: |
+        [Unit]
+        Description=Docker Registrator, Registers running docker containers with consul
+        After=docker.service
+        Requires=docker.service
+        After=consul-agent.service
+        Requires=consul-agent.service
+
+        [Service]
+        TimeoutStartSec=0
+        ExecStartPre=/usr/bin/docker pull gliderlabs/registrator:latest
+        ExecStartPre=-/usr/bin/docker rm %n
+        ExecStartPre=-/usr/bin/sleep 10
+        ExecStart=/usr/bin/docker run --rm --name %n \
+                                  --net "host" \
+                                  -v /var/run/docker.sock:/tmp/docker.sock \
+                                  gliderlabs/registrator:latest consul://localhost:8500
+        ExecStop=/usr/bin/docker stop %n
+        RestartSec=660
+        Restart=always
+write_files:
+  - path: /etc/sysconfig/initial-cluster
+    permissions: 0600
+    owner: root
+    content: |
+      # Hardcoded server IP
+      ETCD_INITIAL_CLUSTER="server=http://172.17.8.101:2380"
+
+  - path: /opt/bin/install-docker-compose.sh
+    permissions: 0700
+    owner: root
+    content: |
+        #!/bin/bash
+        mkdir -p /opt/bin
+        curl -L `curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r '.assets[].browser_download_url | select(contains("Linux") and contains("x86_64"))'` > /opt/bin/docker-compose
+        chmod +x /opt/bin/docker-compose

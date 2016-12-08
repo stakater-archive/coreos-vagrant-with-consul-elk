@@ -1,0 +1,9 @@
+filebeat:
+  image: stakater/filebeat-with-consul-template
+  dns: ${COREOS_PRIVATE_IPV4}
+  dns_search: service.consul
+  volumes:
+    - ~/app-data/logs:/var/log/app
+    - ~/shared/templates/filebeat-templates:/templates
+  environment:
+    - SERVICE_NAME=filebeat
