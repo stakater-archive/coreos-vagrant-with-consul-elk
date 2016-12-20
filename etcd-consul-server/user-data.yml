@@ -49,12 +49,12 @@ coreos:
 
         [Service]
         TimeoutStartSec=0
-        ExecStartPre=/usr/bin/docker pull progrium/consul
+        ExecStartPre=/usr/bin/docker pull consul:0.7.1
         ExecStartPre=-/usr/bin/docker rm %n
         ExecStartPre=/usr/bin/sh -c "etcdctl set /consul/server/ip $private_ipv4"
         ExecStart=/usr/bin/docker run --rm --name %n \
                                   --net="host" \
-                                  progrium/consul -server -ui-dir /ui -advertise $private_ipv4 -bootstrap
+                                  consul:0.7.1 agent -server -ui -bind=$private_ipv4 -client=0.0.0.0 -bootstrap
         ExecStop=/usr/bin/docker stop %n
         RestartSec=650
         Restart=always
