@@ -48,8 +48,8 @@ Note that both Logstash and Filebeat use `consul-tempalte` to render their templ
 2) Clone this project and get it running!
 
 ```
-git clone https://github.com/coreos/coreos-vagrant/
-cd coreos-vagrant
+git clone https://github.com/stakater/coreos-vagrant-with-consul-elk.git
+cd coreos-vagrant-with-consul-elk
 ```
 
 3) Startup and SSH
@@ -108,11 +108,8 @@ After a 'vagrant reload' you will be prompted for your local machine password.
 
 #### Provisioning with user-data
 
-The Vagrantfile will provision your CoreOS VM(s) with [coreos-cloudinit][coreos-cloudinit] if a `user-data` file is found in the project directory.
+The Vagrantfile will provision your CoreOS VM(s) with [coreos-cloudinit][coreos-cloudinit] if a `user-data.yaml` file is found in the project directory.
 coreos-cloudinit simplifies the provisioning process through the use of a script or cloud-config document.
-
-To get started, copy `user-data.sample` to `user-data` and make any necessary modifications.
-Check out the [coreos-cloudinit documentation][coreos-cloudinit] to learn about the available features.
 
 [coreos-cloudinit]: https://github.com/coreos/coreos-cloudinit
 
@@ -123,7 +120,7 @@ See `config.rb.sample` for more information.
 
 ## Cluster Setup
 
-Launching a CoreOS cluster on Vagrant is as simple as configuring `$num_instances` in a `config.rb` file to 3 (or more!) and running `vagrant up`.
+Launching a CoreOS cluster on Vagrant is as simple as configuring `$num_instances` in the `Vagrantfile` file to 3 (or more!) and running `vagrant up`.
 Make sure you provide a fresh discovery URL in your `user-data` if you wish to bootstrap etcd in your cluster.
 
 ## New Box Versions
