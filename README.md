@@ -1,7 +1,8 @@
 # Vagrant VirtualBox CoreOS with ELK Stack and Discovery using Consul and Consul-Template
 This Repo contains 2 Vagrant based CoreOS machines:
-1. Etcd & Consul Server (link)
-2. Consul agent (Client machine) (link)
+
+1. [Etcd & Consul Server](https://github.com/stakater/coreos-vagrant-with-consul-elk/tree/master/consul-agent)
+2. [Consul agent (Client machine)](https://github.com/stakater/coreos-vagrant-with-consul-elk/tree/master/etcd-consul-server)
 
 ##Etcd & Consul Server
 This machine initiates etcd and also runs the consul server.
@@ -34,7 +35,9 @@ The `shared` directory in both server and client machines, is mapped inside the 
 Note that both Logstash and Filebeat use `consul-tempalte` to render their templatized config files. So that Logstash can find Elasticsearch dynamically, even if Elasticserach instance or instances are changed, added, or removed. Similarly Filebeat uses templatized configuration so that it can dynamically locate Logstash nodes from consul.
 
 
-The vagrant machines used in this set up are inspired from: https://github.com/coreos/coreos-vagrant
+
+###### The vagrant machines used in this set up are inspired from: https://github.com/coreos/coreos-vagrant
+
 ## Streamlined setup
 
 1) Install dependencies
