@@ -27,7 +27,7 @@ The `shared` directory in both server and client machines, is mapped inside the 
 2. Navigate to the `etcd-consul-server` directory and run `vagrant up`. Once the vagrant machine is up, you can access the Consul UI from the server's ip address and Consul port, by default : `http://172.17.8.101:8500`
 3. Navigate to the `consul-agent` directory and run `vagrant up`. By default 2 vagrant client machines would start up. You would be able to see these `nodes` in the Consul UI.
 4. SSH into one of the client machines, by running `vagrant ssh consul-agent-01` command. By default all client machines are named as `consul-agent-<machine-number>`
-5. Run the docker-compose file for ELK as: `docker-compose -f ~/shared/elk.yaml up -d`. Once docker-compose has started all the containers successfully, you can congratulate yourself on successfully setting up  the ELK (Elasticsearch, Logstash, Kibana) Stack successfully with Consul Discovery.
+5. Run the docker-compose file for ELK as: `docker-compose -f ~/shared/elk.yaml up -d`. Once docker-compose has started all the containers successfully, you can congratulate yourself on successfully setting up  the ELK (Elasticsearch, Logstash, Kibana) Stack successfully with Consul Discovery. Now try to access Kibana at `http://172.17.9.101:5601/`
 6. Now run a docker container for "log-generating" application, and map the volume which stores logs to `~/app-data/logs`
 7. Run filebeat docker-compose file on the client machine which has your application running: `docker-compose -f ~/shared/filebeat.yaml up -d`. Filebeat will start sending logs to your ELK stack.
 
