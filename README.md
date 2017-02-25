@@ -22,6 +22,7 @@ The client machine starts `consul agent` and `docker registrator` via its cloud-
 ######NOTE:
 The `shared` directory in both server and client machines, is mapped inside the vagrant machine to easily share files between the host and vagrant machines.
 
+
 ##How to Run:
 1. Scroll down to [Streamlined setup](#Streamlined setup) and install all dependencies
 2. Navigate to the `etcd-consul-server` directory and run `vagrant up`. Once the vagrant machine is up, you can access the Consul UI from the server's ip address and Consul port, by default : `http://172.17.8.101:8500`
@@ -31,10 +32,26 @@ The `shared` directory in both server and client machines, is mapped inside the 
 6. Now run a docker container for "log-generating" application, and map the volume which stores logs to `~/app-data/logs`
 7. Run filebeat docker-compose file on the client machine which has your application running: `docker-compose -f ~/shared/filebeat.yaml up -d`. Filebeat will start sending logs to your ELK stack.
 
-###Consul-Template
-Note that both Logstash and Filebeat use `consul-tempalte` to render their templatized config files. So that Logstash can find Elasticsearch dynamically, even if Elasticserach instance or instances are changed, added, or removed. Similarly Filebeat uses templatized configuration so that it can dynamically locate Logstash nodes from consul.
+### Consul-Template
+Note that Logstash, Filebeat, and Kibana use `consul-tempalte` to render their templatized config files.
+You must set consul key-value pairs in order to make these services run.
 
+Refer to their respective README files in their dockerfile repos:
+* Logstash: https://github.com/stakater/dockerfile-logstash-with-consul-template
+* Filebeat: https://github.com/stakater/dockerfile-filebeaet-with-consul-template
+* Kibana: https://github.com/stakater/dockerfile-kibana-with-consul-template
 
+######NOTE:
+The virtual memory for the consul-agent machines has been update to `4096` as elasticsearch was not able to run with memory below than that.
+
+If elasticsearch container fails to start due to VM memmory error, run the following command on the host machine:
+```
+sysctl -w vm.max_map_count=262144
+```
+For OS specific commands and further details refer to https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
+
+### Why docker-compose files and services not in user-data?
+The ELK services are not placed in the user data of consul-agent machine(s) because the machines are designed in such a way that you may be able to launch multiple machines with different services running on different machines. By default, we have set up to launch 2 consul-agent machines, and as a proof of concept, we expect you to run ELK (Elasticsearch, logstash and kibana) on one machine and Filebeat + a "log-generating" application on the other consul-agent machine.
 
 ###### The vagrant machines used in this set up are inspired from: https://github.com/coreos/coreos-vagrant
 
