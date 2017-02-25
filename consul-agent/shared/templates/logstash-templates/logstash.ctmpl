@@ -1,8 +1,10 @@
 input {
         beats {
                 port => 5044
-                codec => "json_lines"
         }
+}
+filter {
+
 }
 output {
         stdout { }
