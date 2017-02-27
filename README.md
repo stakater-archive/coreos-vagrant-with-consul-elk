@@ -28,7 +28,7 @@ The `shared` directory in both server and client machines, is mapped inside the 
 2. Navigate to the `etcd-consul-server` directory and run `vagrant up`. Once the vagrant machine is up, you can access the Consul UI from the server's ip address and Consul port, by default : `http://172.17.8.101:8500`
 3. Navigate to the `consul-agent` directory and run `vagrant up`. By default 2 vagrant client machines would start up. You would be able to see these `nodes` in the Consul UI.
 4. SSH into one of the client machines, by running `vagrant ssh consul-agent-01` command. By default all client machines are named as `consul-agent-<machine-number>`
-5. Run the docker-compose file for ELK as: `docker-compose -f ~/shared/elk up -d`. Once docker-compose has started all the containers successfully, you can congratulate yourself on successfully setting up  the ELK (Elasticsearch, Logstash, Kibana) Stack successfully with Consul Discovery.
+5. Run the docker-compose file for ELK as: `docker-compose -f ~/shared/elk.yaml up -d`. Once docker-compose has started all the containers successfully, you can congratulate yourself on successfully setting up  the ELK (Elasticsearch, Logstash, Kibana) Stack successfully with Consul Discovery. Access Kibana at `http://172.17.9.101:5601/` & Access ElasticSearch at `http://172.17.9.101:9200/`
 6. Now run a docker container for "log-generating" application, and map the volume which stores logs to `~/app-data/logs`
 7. Run filebeat docker-compose file on the client machine which has your application running: `docker-compose -f ~/shared/filebeat.yaml up -d`. Filebeat will start sending logs to your ELK stack.
 
@@ -65,8 +65,8 @@ The ELK services are not placed in the user data of consul-agent machine(s) beca
 2) Clone this project and get it running!
 
 ```
-git clone https://github.com/coreos/coreos-vagrant/
-cd coreos-vagrant
+git clone https://github.com/stakater/coreos-vagrant-with-consul-elk.git
+cd coreos-vagrant-with-consul-elk
 ```
 
 3) Startup and SSH
@@ -125,11 +125,8 @@ After a 'vagrant reload' you will be prompted for your local machine password.
 
 #### Provisioning with user-data
 
-The Vagrantfile will provision your CoreOS VM(s) with [coreos-cloudinit][coreos-cloudinit] if a `user-data` file is found in the project directory.
+The Vagrantfile will provision your CoreOS VM(s) with [coreos-cloudinit][coreos-cloudinit] if a `user-data.yaml` file is found in the project directory.
 coreos-cloudinit simplifies the provisioning process through the use of a script or cloud-config document.
-
-To get started, copy `user-data.sample` to `user-data` and make any necessary modifications.
-Check out the [coreos-cloudinit documentation][coreos-cloudinit] to learn about the available features.
 
 [coreos-cloudinit]: https://github.com/coreos/coreos-cloudinit
 
@@ -140,7 +137,7 @@ See `config.rb.sample` for more information.
 
 ## Cluster Setup
 
-Launching a CoreOS cluster on Vagrant is as simple as configuring `$num_instances` in a `config.rb` file to 3 (or more!) and running `vagrant up`.
+Launching a CoreOS cluster on Vagrant is as simple as configuring `$num_instances` in the `Vagrantfile` file to 3 (or more!) and running `vagrant up`.
 Make sure you provide a fresh discovery URL in your `user-data` if you wish to bootstrap etcd in your cluster.
 
 ## New Box Versions
