@@ -1,6 +1,11 @@
 input {
         beats {
+            {{$beatsPortKey := "/logstash/beatsPort" }}
+            {{if keyExists $beatsPortKey}}
+                port => {{key $beatsPortKey}}
+            {{else}}
                 port => 5044
+            {{end}}
         }
 }
 filter {
