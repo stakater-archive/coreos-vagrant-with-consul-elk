@@ -4,7 +4,7 @@ filebeat:
   dns: ${COREOS_PRIVATE_IPV4}
   dns_search: service.consul
   volumes:
-    - ~/app-data/logs:/var/log/app
+    - ~/shared/logs:/var/log/app
     - ~/shared/templates/filebeat-templates:/templates
   labels:
     - SERVICE_NAME=filebeat

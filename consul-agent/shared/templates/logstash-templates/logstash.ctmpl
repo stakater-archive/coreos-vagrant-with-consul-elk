@@ -6,6 +6,7 @@ input {
             {{else}}
                 port => 5044
             {{end}}
+            codec => "json_lines"
         }
 }
 filter {
