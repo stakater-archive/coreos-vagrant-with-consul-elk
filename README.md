@@ -35,6 +35,11 @@ The `shared` directory in both server and client machines, is mapped inside the 
 
 5. Run the docker-compose file for ELK as: `docker-compose -f ~/shared/elk.yaml up -d`. Once docker-compose has started all the containers successfully, you can congratulate yourself on successfully setting up  the ELK (Elasticsearch, Logstash, Kibana) Stack successfully with Consul Discovery. Access Kibana at `http://172.17.9.101:5601/` & Access ElasticSearch at `http://172.17.9.101:9200/`
 
+Add key in Consul:
+
+key - kibana/elasticsearchURL
+value - http://elasticsearch-9200:9200
+
 6. Now run a docker container for "log-generating" application, and map the volume which stores logs to `~/shared/logs`
 
 7. Run filebeat docker-compose file on the client machine which has your application running: `docker-compose -f ~/shared/filebeat.yaml up -d`. Filebeat will start sending logs to your ELK stack.
